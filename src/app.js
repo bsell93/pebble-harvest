@@ -18,7 +18,7 @@ var header = {
 
 var dayEntries = [];
 var projects = [];
-var clientList, splashWindow;
+var clientList, splashWindow, taskList;
 
 
 activate();
@@ -76,21 +76,23 @@ function showClients() {
   }).show();
   splashWindow.hide();
   
-  createClientListListener();
+  createClientListListeners();
 }
 
-function showTasks(index) {
-  new UI.Menu({
+function showTasks(projectIndex) {
+  taskList = new UI.Menu({
     sections: [{
       title: 'Tasks',
-      items: getTaskListAndTime(index)
+      items: getTaskListAndTime(projectIndex)
     }]
   }).show();
+  
+  createTaskListeners(projectIndex);
 }
 
-function getTaskListAndTime(index) {
+function getTaskListAndTime(projectIndex) {
   var items = [];
-  var project = projects[index];
+  var project = projects[projectIndex];
   for (var i in project.tasks) {
     var task = project.tasks[i];
     var time = null;
@@ -108,7 +110,38 @@ function getTaskListAndTime(index) {
   return items;
 }
 
-function createClientListListener() {
+function createTaskListeners(projectIndex) {
+  taskList.on('select', function(e) {
+    var project = projects[projectIndex];
+    toggleTimer(project.id, project.tasks[e.itemIndex].id);
+  });
+}
+
+function toggleTimer(projectId, taskId) {
+  for (var i in dayEntries) {
+      var entry = dayEntries[i];
+      if (entry.task_id == taskId && entry.project_id == projectId) {
+        toggleTimerRequest(entry.id);
+      }
+  }
+}
+
+function toggleTimerRequest(dayEntryId) {
+  ajax(
+    {
+      headers: header,
+      url: 'https://jrbeutler.harvestapp.com/daily/timer/' + dayEntryId
+    },
+    function(data) {
+      console.log(data);
+    },
+    function(error) {
+      console.log('Error!!! ' + error);
+    }
+  );
+}
+
+function createClientListListeners() {
   clientList.on('select', function(e) {
     showTasks(e.itemIndex);
   });
