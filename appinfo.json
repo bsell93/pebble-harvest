@@ -28,6 +28,11 @@
                 "file": "fonts/UbuntuMono-Regular.ttf",
                 "name": "MONO_FONT_14",
                 "type": "font"
+            },
+            {
+                "file": "images/timer.png",
+                "name": "IMAGES_TIMER_PNG",
+                "type": "png"
             }
         ]
     },

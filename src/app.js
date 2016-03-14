@@ -4,18 +4,11 @@
  * This is where you write your app.
  */
 
-var ajax = require('ajax');
+var service = require('service');
 var UI = require('ui');
 var Vector2 = require('vector2');
 
-var authString = 'Basic YnJ5YW50QGpyYmV1dGxlci5jb206amFzbWluZTE=';
-
-var header = {
-        Authorization: authString,
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      };
-
+var forDate = "";
 var dayEntries = [];
 var projects = [];
 var clientList, splashWindow, taskList;
@@ -46,99 +39,7 @@ function createAndShowSplash() {
   // Add to splashWindow and show
   splashWindow.add(text).show();
   
-  getTimeEntries();
-}
-
-function getTimeEntries() {
-  ajax(
-    {
-      headers: header,
-      url: 'https://jrbeutler.harvestapp.com/daily/70/2016'
-    },
-    function(data) {
-      data = JSON.parse(data);
-      dayEntries = data.day_entries;
-      projects = data.projects;
-      showClients();
-    },
-    function(error) {
-      console.log('Error!!! ' + error);
-    }
-  );
-}
-
-function showClients() {
-  clientList = new UI.Menu({
-    sections: [{
-      title: 'Clients',
-      items: createListItems(projects, 'client')
-    }]
-  }).show();
-  splashWindow.hide();
-  
-  createClientListListeners();
-}
-
-function showTasks(projectIndex) {
-  taskList = new UI.Menu({
-    sections: [{
-      title: 'Tasks',
-      items: getTaskListAndTime(projectIndex)
-    }]
-  }).show();
-  
-  createTaskListeners(projectIndex);
-}
-
-function getTaskListAndTime(projectIndex) {
-  var items = [];
-  var project = projects[projectIndex];
-  for (var i in project.tasks) {
-    var task = project.tasks[i];
-    var time = null;
-    for (var idx in dayEntries) {
-      var entry = dayEntries[idx];
-      if (entry.task_id == task.id && entry.project_id == project.id) {
-        time = dayEntries[idx].hours;
-      }
-    }
-    items.push({
-      title: task.name,
-      subtitle: time
-    });
-  }
-  return items;
-}
-
-function createTaskListeners(projectIndex) {
-  taskList.on('select', function(e) {
-    var project = projects[projectIndex];
-    toggleTimer(project.id, project.tasks[e.itemIndex].id);
-  });
-}
-
-function toggleTimer(projectId, taskId) {
-  for (var i in dayEntries) {
-      var entry = dayEntries[i];
-      if (entry.task_id == taskId && entry.project_id == projectId) {
-        toggleTimerRequest(entry.id);
-      }
-  }
-}
-
-function toggleTimerRequest(dayEntryId) {
-  ajax(
-    {
-      headers: header,
-      url: 'https://jrbeutler.harvestapp.com/daily/timer/' + dayEntryId
-    },
-    function(data) {
-      console.log(data);
-    },
-    function(error) {
-      console.log('Error!!! ' + error);
-    }
-  );
+  service.getTimeEntries(getTimeEntriesSuccess, error);
 }
 
 function createClientListListeners() {
@@ -156,3 +57,99 @@ function createListItems(arrayOfItems, titleProperty) {
   }
   return items;
 }
+
+function createTaskListeners(projectIndex) {
+  taskList.on('select', function(e) {
+    var project = projects[projectIndex];
+    toggleOrCreateTimer(project.id, project.tasks[e.itemIndex].id);
+  });
+}
+
+function getTaskListAndTime(projectIndex) {
+  var items = [];
+  var project = projects[projectIndex];
+  for (var i in project.tasks) {
+    var task = project.tasks[i];
+    var time = null;
+    var icon = '';
+    for (var idx in dayEntries) {
+      var entry = dayEntries[idx];
+      if (entry.task_id == task.id && entry.project_id == project.id) {
+        time = dayEntries[idx].hours;
+        if (entry.timer_started_at) {
+          icon = 'images/timer.png';
+        }
+      }
+    }
+    items.push({
+      title: task.name,
+      subtitle: time,
+      icon: icon
+    });
+  }
+  return items;
+}
+
+function showClients() {
+  clientList = new UI.Menu({
+    sections: [{
+      title: 'Clients',
+      items: createListItems(projects, 'client')
+    }]
+  }).show();
+  splashWindow.hide();
+  
+  createClientListListeners();
+}
+
+function showTasks(projectIndex) {
+  taskList = new UI.Menu({
+    highlightBackgroundColor: 'blue',
+    sections: [{
+      title: 'Tasks',
+      items: getTaskListAndTime(projectIndex)
+    }]
+  }).show();
+  
+  createTaskListeners(projectIndex);
+}
+
+function toggleOrCreateTimer(projectId, taskId) {
+  var called = false;
+  for (var i in dayEntries) {
+      var entry = dayEntries[i];
+      if (entry.task_id == taskId && entry.project_id == projectId) {
+        service.toggleTimer(entry.id, null, error);
+        called = true;
+      }
+  }
+  if (!called) {
+    service.createTimer(projectId, taskId, forDate, createTimerSuccess, error);
+  }
+}
+
+// REGION: Service functions
+function createTimerSuccess(data) {
+  data = JSON.parse(data);
+  for (var i in dayEntries) {
+    if (data.project_id != dayEntries[i].project_id && data.task_id != dayEntries[i].task_id) {
+      dayEntries.push(data);
+    }
+  }
+  if (dayEntries.length === 0) {
+    dayEntries.push(data);
+  }
+}
+
+function getTimeEntriesSuccess(data) {
+  data = JSON.parse(data);
+  forDate = data.for_day;
+  dayEntries = data.day_entries;
+  projects = data.projects;
+  showClients();
+}
+
+function error(error) {
+  console.log('Error!!! ' + error);
+}
+// ENDREGION: Service functions
