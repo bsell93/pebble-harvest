@@ -16,8 +16,9 @@ var header = {
         'Content-Type': 'application/json'
       };
 
+var dayEntries = [];
 var projects = [];
-var splashWindow;
+var clientList, splashWindow;
 
 
 activate();
@@ -48,30 +49,15 @@ function createAndShowSplash() {
   getTimeEntries();
 }
 
-function login() {
-  ajax(
-    {
-      headers: header,
-      url: 'https://jrbeutler.harvestapp.com/account/who_am_i'
-    },
-    function(data) {
-      data = JSON.parse(data);
-      getTimeEntries();
-    },
-    function(error) {
-      console.log('Error!!! ' + error);
-    }
-  );
-}
-
 function getTimeEntries() {
   ajax(
     {
       headers: header,
-      url: 'https://jrbeutler.harvestapp.com/daily'
+      url: 'https://jrbeutler.harvestapp.com/daily/70/2016'
     },
     function(data) {
       data = JSON.parse(data);
+      dayEntries = data.day_entries;
       projects = data.projects;
       showClients();
     },
@@ -82,13 +68,50 @@ function getTimeEntries() {
 }
 
 function showClients() {
-  new UI.Menu({
+  clientList = new UI.Menu({
     sections: [{
       title: 'Clients',
       items: createListItems(projects, 'client')
     }]
   }).show();
   splashWindow.hide();
+  
+  createClientListListener();
+}
+
+function showTasks(index) {
+  new UI.Menu({
+    sections: [{
+      title: 'Tasks',
+      items: getTaskListAndTime(index)
+    }]
+  }).show();
+}
+
+function getTaskListAndTime(index) {
+  var items = [];
+  var project = projects[index];
+  for (var i in project.tasks) {
+    var task = project.tasks[i];
+    var time = null;
+    for (var idx in dayEntries) {
+      var entry = dayEntries[idx];
+      if (entry.task_id == task.id && entry.project_id == project.id) {
+        time = dayEntries[idx].hours;
+      }
+    }
+    items.push({
+      title: task.name,
+      subtitle: time
+    });
+  }
+  return items;
+}
+
+function createClientListListener() {
+  clientList.on('select', function(e) {
+    showTasks(e.itemIndex);
+  });
 }
 
 function createListItems(arrayOfItems, titleProperty) {
