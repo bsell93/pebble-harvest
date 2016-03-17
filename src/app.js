@@ -20,11 +20,17 @@ var clientList, splashWindow, taskList;
 activate();
 
 function activate() {
-  service.createPebbleListeners();
-  createAndShowSplash();
+  service.createConfigListenersAndGetTimeEntries(getTimeEntriesSuccess, error);
+  var textTitle = 'Downloading client data...';
+  if (service.authStringExists()) {
+    service.getTimeEntries(getTimeEntriesSuccess, error);
+  } else {
+    textTitle = 'Login in the settings of the app first.';
+  }
+  createAndShowSplash(textTitle);
 }
 
-function createAndShowSplash() {
+function createAndShowSplash(textTitle) {
   // Show splash screen while waiting for data
   splashWindow = new UI.Window();
 
@@ -32,18 +38,16 @@ function createAndShowSplash() {
   var text = new UI.Text({
     position: new Vector2(0, 0),
     size: new Vector2(144, 168),
-    text:'Downloading client data...',
-    font:'GOTHIC_28_BOLD',
-    color:'black',
-    textOverflow:'wrap',
-    textAlign:'center',
-    backgroundColor:'white'
+    text: textTitle,
+    font: 'GOTHIC_28_BOLD',
+    color: 'black',
+    textOverflow: 'wrap',
+    textAlign: 'center',
+    backgroundColor: 'white'
   });
 
   // Add to splashWindow and show
   splashWindow.add(text).show();
-
-  service.getTimeEntries(getTimeEntriesSuccess, error);
 }
 
 function createClientListListeners() {
@@ -135,12 +139,12 @@ function toggleOrCreateTimer(projectId, taskId, taskIndex) {
   var called = false;
   var taskItem = taskList.item(0, taskIndex);
   for (var i in dayEntries) {
-      var entry = dayEntries[i];
-      if (entry.task_id == taskId && entry.project_id == projectId) {
-        taskItem.icon = entry.timer_started_at ? '' : timerWhiteImage;
-        service.toggleTimer(entry.id, toggleTimerSuccess, error);
-        called = true;
-      }
+    var entry = dayEntries[i];
+    if (entry.task_id == taskId && entry.project_id == projectId) {
+      taskItem.icon = entry.timer_started_at ? '' : timerWhiteImage;
+      service.toggleTimer(entry.id, toggleTimerSuccess, error);
+      called = true;
+    }
   }
   if (!called) {
     taskItem.icon = timerWhiteImage;
