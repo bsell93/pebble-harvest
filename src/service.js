@@ -31,7 +31,7 @@ function createConfigListenersAndGetTimeEntries(successCallback, errorCallback) 
   Settings.config(
     { url: configUrl },
     function(e) {
-      console.log('closed configurable: '  JSON.stringify(e));
+      console.log('closed configurable: ' + JSON.stringify(e));
       header.Authorization = Settings.option().authString;
       baseUrl = getBaseUrl();
       getTimeEntries(successCallback, errorCallback);
