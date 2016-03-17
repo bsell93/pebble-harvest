@@ -1,7 +1,7 @@
 {
     "appKeys": {},
     "capabilities": [
-        ""
+        "configurable"
     ],
     "companyName": "bryantsell@gmail.com",
     "longName": "Harvest",
@@ -28,6 +28,11 @@
                 "file": "fonts/UbuntuMono-Regular.ttf",
                 "name": "MONO_FONT_14",
                 "type": "font"
+            },
+            {
+                "file": "images/timer_white.png",
+                "name": "IMAGES_TIMER_WHITE_PNG",
+                "type": "png"
             },
             {
                 "file": "images/timer.png",
