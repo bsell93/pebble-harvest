@@ -22,7 +22,7 @@ activate();
 function activate() {
   service.createConfigListenersAndGetTimeEntries(getTimeEntriesSuccess, error);
   var textTitle = 'Downloading client data...';
-  if (service.authStringExists()) {
+  if (service.validLoginInfo()) {
     service.getTimeEntries(getTimeEntriesSuccess, error);
   } else {
     textTitle = 'Login in the settings of the app first.';

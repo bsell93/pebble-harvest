@@ -3,7 +3,7 @@ var Settings = require('settings');
 
 
 var service = {
-  authStringExists: authStringExists,
+  validLoginInfo: validLoginInfo,
   createConfigListenersAndGetTimeEntries: createConfigListenersAndGetTimeEntries,
   createTimer: createTimer,
   getTimeEntries: getTimeEntries,
@@ -11,7 +11,7 @@ var service = {
 };
 
 
-var baseUrl = 'https://jrbeutler.harvestapp.com/';
+var baseUrl = getBaseUrl();
 var configUrl = 'http://10.101.200.85/pebble-harvest/';
 var header = {
   Authorization: Settings.option().authString,
@@ -20,8 +20,8 @@ var header = {
 };
 
 
-function authStringExists() {
-  if (Settings.option().authString) {
+function validLoginInfo() {
+  if (Settings.option().authString && Settings.option().harvestUrl) {
     return true;
   }
   return false;
@@ -33,6 +33,7 @@ function createConfigListenersAndGetTimeEntries(successCallback, errorCallback) 
     function(e) {
       console.log('closed configurable: '  JSON.stringify(e));
       header.Authorization = Settings.option().authString;
+      baseUrl = getBaseUrl();
       getTimeEntries(successCallback, errorCallback);
     }
   );
@@ -50,6 +51,10 @@ function createTimer(projectId, taskId, spentAt, success, error) {
 
 function getTimeEntries(success, error) {
   get('daily', success, error);
+}
+
+function getBaseUrl() {
+  return 'https://' + Settings.option().harvestUrl + '.harvestapp.com/';
 }
 
 function toggleTimer(dayEntryId, success, error) {

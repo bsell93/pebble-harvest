@@ -12,3 +12,12 @@
   width: 50%;
   margin: 0 auto;
 }
+
+#harvestUrl {
+  width: 35%;
+}
+
+#harvestUrlWrapper {
+  margin: 0 auto;
+  display: inline;
+}

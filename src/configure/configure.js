@@ -14,12 +14,16 @@ function loginHandler() {
 }
 
 function loadOptions() {
+  var rememberMe = $('#rememberMe');
+  var harvestUrl = $('#harvestUrl');
   var email = $('#email');
   var password = $('#password');
-  var rememberMe = $('#rememberMe');
 
   if (localStorage.rememberMe) {
     rememberMe[0].checked = localStorage.rememberMe;
+    if (localStorage.harvestUrl) {
+      harvestUrl[0].value = localStorage.harvestUrl;
+    }
     if (localStorage.email) {
       email[0].value = atob(localStorage.email);
     }
@@ -30,18 +34,21 @@ function loadOptions() {
 }
 
 function getAndStoreConfigData() {
+  var rememberMe = $('#rememberMe');
+  var harvestUrl = $('#harvestUrl');
   var email = $('#email');
   var password = $('#password');
-  var rememberMe = $('#rememberMe');
 
   var options = {
-    authString: 'Basic ' + btoa(email.val() + ':' + password.val())
+    authString: 'Basic ' + btoa(email.val() + ':' + password.val()),
+    harvestUrl: harvestUrl
   };
 
   if (rememberMe[0].checked) {
+    localStorage.rememberMe = rememberMe[0].checked;
+    localStorage.harvestUrl = harvestUrl.val();
     localStorage.email = btoa(email.val());
     localStorage.password = btoa(password.val());
-    localStorage.rememberMe = rememberMe[0].checked;
   } else {
     localStorage.clear();
   }
