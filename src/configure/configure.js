@@ -41,7 +41,7 @@ function getAndStoreConfigData() {
 
   var options = {
     authString: 'Basic ' + btoa(email.val() + ':' + password.val()),
-    harvestUrl: harvestUrl
+    harvestUrl: harvestUrl.val()
   };
 
   if (rememberMe[0].checked) {
