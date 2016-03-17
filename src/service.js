@@ -12,7 +12,7 @@ var service = {
 
 
 var baseUrl = getBaseUrl();
-var configUrl = 'http://10.101.200.85/pebble-harvest/';
+var configUrl = 'https://bsell93.github.io/pebble-harvest/';
 var header = {
   Authorization: Settings.option().authString,
   Accept: 'application/json',
