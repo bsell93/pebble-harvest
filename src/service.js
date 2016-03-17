@@ -2,6 +2,7 @@ var ajax = require('ajax');
 
 
 var service = {
+  createPebbleListeners: createPebbleListeners,
   createTimer: createTimer,
   getTimeEntries: getTimeEntries,
   toggleTimer: toggleTimer
@@ -17,13 +18,26 @@ var header = {
 };
 
 
+function createPebbleListeners() {
+  Pebble.addEventListener('showConfiguration', function() {
+    var url = './configure/index.html';
+
+    Pebble.openURL(url);
+  });
+
+  Pebble.addEventListener('webviewclosed', function(e) {
+    var configData = JSON.parse(decodeURIComponent(e.response));
+    console.log(configData);
+  });
+}
+
 function createTimer(projectId, taskId, spentAt, success, error) {
   var data = {
     project_id : projectId,
     task_id : taskId,
     spent_at : spentAt
   };
-  
+
   post('daily/add', data, success, error);
 }
 

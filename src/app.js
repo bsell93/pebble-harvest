@@ -11,7 +11,7 @@ var Vector2 = require('vector2');
 var timerImage = 'images/timer.png';
 var timerWhiteImage = 'images/timer_white.png';
 
-var forDate = "";
+var forDate = '';
 var dayEntries = [];
 var projects = [];
 var clientList, splashWindow, taskList;
@@ -20,13 +20,14 @@ var clientList, splashWindow, taskList;
 activate();
 
 function activate() {
+  service.createPebbleListeners();
   createAndShowSplash();
 }
 
 function createAndShowSplash() {
   // Show splash screen while waiting for data
   splashWindow = new UI.Window();
-  
+
   // Text element to inform user
   var text = new UI.Text({
     position: new Vector2(0, 0),
@@ -38,10 +39,10 @@ function createAndShowSplash() {
     textAlign:'center',
     backgroundColor:'white'
   });
-  
+
   // Add to splashWindow and show
   splashWindow.add(text).show();
-  
+
   service.getTimeEntries(getTimeEntriesSuccess, error);
 }
 
@@ -102,7 +103,7 @@ function showClients() {
     }]
   }).show();
   splashWindow.hide();
-  
+
   createClientListListeners();
 }
 
@@ -114,7 +115,7 @@ function showTasks(projectIndex) {
       items: getTaskListAndTime(projectIndex)
     }]
   }).show();
-  
+
   createTaskListeners(projectIndex);
 }
 
