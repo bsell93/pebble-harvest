@@ -14,7 +14,7 @@ var timerWhiteImage = 'images/timer_white.png';
 var forDate = '';
 var dayEntries = [];
 var projects = [];
-var clientList, splashWindow, taskList;
+var mainList, splashWindow, taskList;
 
 
 activate();
@@ -50,13 +50,29 @@ function createAndShowSplash(textTitle) {
   splashWindow.add(text).show();
 }
 
-function createClientListListeners() {
-  clientList.on('select', function(e) {
-    showTasks(e.itemIndex);
+function createMainListListeners() {
+  mainList.on('select', function(e) {
+    var entry = {};
+    switch(e.sectionIndex) {
+      case 0:
+        for (var i in dayEntries) {
+          if (dayEntries[i].timer_started_at) {
+            entry = dayEntries[i];
+          }
+        }
+        toggleOrCreateTimer(entry.project_id, entry.task_id);
+        break;
+      case 1:
+        entry = dayEntries[e.itemIndex];
+        toggleOrCreateTimer(entry.project_id, entry.task_id);
+        break;
+      default:
+        showTasks(e.itemIndex);
+    }
   });
 }
 
-function createListItems(arrayOfItems, titleProperty) {
+function createClientListItems(arrayOfItems, titleProperty) {
   var items = [];
   for (var i in arrayOfItems) {
     items.push({
@@ -69,11 +85,37 @@ function createListItems(arrayOfItems, titleProperty) {
 function createTaskListeners(projectIndex) {
   taskList.on('select', function(e) {
     var project = projects[projectIndex];
-    toggleOrCreateTimer(project.id, project.tasks[e.itemIndex].id, e.itemIndex);
+    toggleOrCreateTimer(project.id, project.tasks[e.itemIndex].id);
   });
 }
 
-function getTaskListAndTime(projectIndex) {
+function getCurrentAndRecentTimerItems() {
+  var currentItems = [];
+  var recentItems = [];
+  for (var i in dayEntries) {
+    var entry = dayEntries[i];
+    var item = {
+      title: entry.client,
+      subtitle: getCurrentTimerSubtitle(entry)
+    };
+    if (entry.timer_started_at) {
+      item.icon = timerImage;
+      currentItems.push(item);
+    } else {
+      recentItems.push(item);
+    }
+  }
+  return {
+    currentTimerItems: currentItems,
+    recentTimerItems: recentItems
+  };
+}
+
+function getCurrentTimerSubtitle(entry) {
+  return getTimeString(entry.hours) + ', ' + entry.task;
+}
+
+function getTaskListItems(projectIndex) {
   var items = [];
   var project = projects[projectIndex];
   for (var i in project.tasks) {
@@ -83,7 +125,7 @@ function getTaskListAndTime(projectIndex) {
     for (var idx in dayEntries) {
       var entry = dayEntries[idx];
       if (entry.task_id == task.id && entry.project_id == project.id) {
-        time = dayEntries[idx].hours.toString();
+        time = getTimeString(dayEntries[idx].hours);
         if (entry.timer_started_at) {
           icon = timerImage;
         }
@@ -95,28 +137,55 @@ function getTaskListAndTime(projectIndex) {
       icon: icon
     });
   }
+  console.log(JSON.stringify(items));
   return items;
 }
 
+function getTaskListTitle(projectIndex) {
+  return projects[projectIndex].client + ' Tasks';
+}
+
+function getTimeString(hourValue) {
+  hourValue = parseFloat(hourValue, 10);
+  var seconds = hourValue * 3600;
+  var hours = Math.floor(hourValue);
+  var minutes = Math.floor((seconds - (hours * 3600)) / 60);
+  return hours + ':' + minutes;
+}
+
 function showClients() {
-  clientList = new UI.Menu({
+  mainList = new UI.Menu({
     highlightBackgroundColor: 'blue',
-    sections: [{
-      title: 'Clients',
-      items: createListItems(projects, 'client')
-    }]
-  }).show();
+    sections: [
+      { // Current timer
+        title: '',
+        items: []
+      },
+      { // Recent timers
+        title: '',
+        items: []
+      },
+      {
+        title: 'Clients',
+        items: createClientListItems(projects, 'client')
+      }
+    ]
+  });
+  
+  updateMainListTimerSections();
+  
+  mainList.show();
   splashWindow.hide();
 
-  createClientListListeners();
+  createMainListListeners();
 }
 
 function showTasks(projectIndex) {
   taskList = new UI.Menu({
     highlightBackgroundColor: 'blue',
     sections: [{
-      title: 'Tasks',
-      items: getTaskListAndTime(projectIndex)
+      title: projects[projectIndex].client + ' Tasks',
+      items: getTaskListItems(projectIndex)
     }]
   }).show();
 
@@ -135,35 +204,80 @@ function showTasks(projectIndex) {
 //   }
 // }
 
-function toggleOrCreateTimer(projectId, taskId, taskIndex) {
+function toggleOrCreateTimer(projectId, taskId) {
   var called = false;
-  var taskItem = taskList.item(0, taskIndex);
   for (var i in dayEntries) {
     var entry = dayEntries[i];
     if (entry.task_id == taskId && entry.project_id == projectId) {
-      taskItem.icon = entry.timer_started_at ? '' : timerWhiteImage;
       service.toggleTimer(entry.id, toggleTimerSuccess, error);
       called = true;
+      break;
     }
   }
   if (!called) {
-    taskItem.icon = timerWhiteImage;
     service.createTimer(projectId, taskId, forDate, createTimerSuccess, error);
   }
-  taskList.item(0, taskIndex, taskItem);
+}
+
+function updateMainListTimerSections() {
+  var timerItemsObject = getCurrentAndRecentTimerItems();
+  var currentTimerItems = timerItemsObject.currentTimerItems;
+  var currentTimerTitle = currentTimerItems.length > 0 ? 'Current Timer' : '';
+  var recentTimerItems = timerItemsObject.recentTimerItems;
+  var recentTimerTitle = recentTimerItems.length > 0 ? 'Recent Timers' : '';
+  if (recentTimerItems.length == 1) {
+    recentTimerTitle = 'Recent Timer';
+  }
+  var currentTimerSection = {
+    title: currentTimerTitle,
+    items: currentTimerItems
+  };
+  var recentTimerSection = {
+    title: recentTimerTitle,
+    items: recentTimerItems
+  };
+  mainList.section(0, currentTimerSection);
+  mainList.section(1, recentTimerSection);
+  mainList.selection(0, 0);
+}
+
+function updateMenus(projectId) {
+  updateMainListTimerSections();
+  updateTaskList(projectId);
+}
+
+function updateTaskList(projectId) {
+  if (taskList) {
+    var projectIndex = null;
+    for (var i in projects) {
+      if (projects[i].id == projectId) {
+        projectIndex = i;
+      }
+    }
+    if (projectIndex) {
+      var section = {
+        title: getTaskListTitle(projectIndex),
+        items: getTaskListItems(projectIndex)
+      };
+      taskList.section(0, section);
+    }
+  }
 }
 
 // REGION: Service functions
 function createTimerSuccess(data) {
   data = JSON.parse(data);
   for (var i in dayEntries) {
-    if (data.project_id != dayEntries[i].project_id && data.task_id != dayEntries[i].task_id) {
+    if (data.project_id != dayEntries[i].project_id || data.task_id != dayEntries[i].task_id) {
       dayEntries.push(data);
+      break;
     }
   }
   if (dayEntries.length === 0) {
+    console.log('PUSHING');
     dayEntries.push(data);
   }
+  updateMenus(data.project_id);
 }
 
 function getTimeEntriesSuccess(data) {
@@ -181,6 +295,7 @@ function toggleTimerSuccess(data) {
       dayEntries[i] = data;
     }
   }
+  updateMenus(data.project_id);
 }
 
 function error(error) {
