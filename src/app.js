@@ -137,7 +137,6 @@ function getTaskListItems(projectIndex) {
       icon: icon
     });
   }
-  console.log(JSON.stringify(items));
   return items;
 }
 
@@ -171,9 +170,9 @@ function showClients() {
       }
     ]
   });
-  
+
   updateMainListTimerSections();
-  
+
   mainList.show();
   splashWindow.hide();
 
@@ -274,7 +273,6 @@ function createTimerSuccess(data) {
     }
   }
   if (dayEntries.length === 0) {
-    console.log('PUSHING');
     dayEntries.push(data);
   }
   updateMenus(data.project_id);
