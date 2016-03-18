@@ -25,7 +25,7 @@ function activate() {
   if (service.validLoginInfo()) {
     service.getTimeEntries(getTimeEntriesSuccess, error);
   } else {
-    textTitle = 'Login in the settings of the app first.';
+    textTitle = 'Login to Harvest in the settings of the app.';
   }
   createAndShowSplash(textTitle);
 }
