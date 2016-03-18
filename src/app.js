@@ -14,6 +14,7 @@ var timerWhiteImage = 'images/timer_white.png';
 var forDate = '';
 var dayEntries = [];
 var projects = [];
+var selectedProjectId = null;
 var mainList, splashWindow, taskList;
 
 
@@ -152,6 +153,12 @@ function getTimeString(hourValue) {
   return hours + ':' + minutes;
 }
 
+function setUpdateDataInterval() {
+  setInterval(function() {
+    service.getTimeEntries(updateDataSuccess, error);
+  }, 10000);
+}
+
 function showClients() {
   mainList = new UI.Menu({
     highlightBackgroundColor: 'blue',
@@ -180,6 +187,7 @@ function showClients() {
 }
 
 function showTasks(projectIndex) {
+  selectedProjectId = projects[projectIndex].id;
   taskList = new UI.Menu({
     highlightBackgroundColor: 'blue',
     sections: [{
@@ -218,7 +226,7 @@ function toggleOrCreateTimer(projectId, taskId) {
   }
 }
 
-function updateMainListTimerSections() {
+function updateMainListTimerSections(selectFirst) {
   var timerItemsObject = getCurrentAndRecentTimerItems();
   var currentTimerItems = timerItemsObject.currentTimerItems;
   var currentTimerTitle = currentTimerItems.length > 0 ? 'Current Timer' : '';
@@ -237,11 +245,13 @@ function updateMainListTimerSections() {
   };
   mainList.section(0, currentTimerSection);
   mainList.section(1, recentTimerSection);
-  mainList.selection(0, 0);
+  if (selectFirst) {
+    mainList.selection(0, 0);
+  }
 }
 
-function updateMenus(projectId) {
-  updateMainListTimerSections();
+function updateMenus(projectId, dontSelectFirst) {
+  updateMainListTimerSections(!dontSelectFirst);
   updateTaskList(projectId);
 }
 
@@ -284,6 +294,7 @@ function getTimeEntriesSuccess(data) {
   dayEntries = data.day_entries;
   projects = data.projects;
   showClients();
+  setUpdateDataInterval();
 }
 
 function toggleTimerSuccess(data) {
@@ -294,6 +305,15 @@ function toggleTimerSuccess(data) {
     }
   }
   updateMenus(data.project_id);
+}
+
+function updateDataSuccess(data) {
+  data = JSON.parse(data);
+  forDate = data.for_day;
+  dayEntries = data.day_entries;
+  projects = data.projects;
+  
+  updateMenus(selectedProjectId, true);
 }
 
 function error(error) {
