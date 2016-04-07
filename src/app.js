@@ -11,8 +11,9 @@ var Vector2 = require('vector2');
 var timerImage = 'images/timer.png';
 var timerWhiteImage = 'images/timer_white.png';
 
-var forDate = '';
 var dayEntries = [];
+var forDate = '';
+var getDataIntervalTimer = null;
 var projects = [];
 var selectedProjectId = null;
 var mainList, splashWindow, taskList;
@@ -154,9 +155,12 @@ function getTimeString(hourValue) {
 }
 
 function setUpdateDataInterval() {
-  setInterval(function() {
-    service.getTimeEntries(updateDataSuccess, error);
-  }, 10000);
+  if (!getDataIntervalTimer) {
+    getDataIntervalTimer = setInterval(function() {
+      console.log('Updating the data because interval');
+      service.getTimeEntries(updateDataSuccess, error);
+    }, 10000);
+  }
 }
 
 function showClients() {
