@@ -1,57 +1,46 @@
 {
-    "appKeys": {},
-    "capabilities": [
-        "configurable"
-    ],
-    "companyName": "bryantsell@gmail.com",
-    "longName": "Harvest",
-    "projectType": "pebblejs",
-    "resources": {
-        "media": [
-            {
-                "file": "images/menu_icon.png",
-                "menuIcon": true,
-                "name": "IMAGE_MENU_ICON",
-                "type": "bitmap"
-            },
-            {
-                "file": "images/logo_splash.png",
-                "name": "IMAGE_LOGO_SPLASH",
-                "type": "bitmap"
-            },
-            {
-                "file": "images/tile_splash.png",
-                "name": "IMAGE_TILE_SPLASH",
-                "type": "bitmap"
-            },
-            {
-                "file": "fonts/UbuntuMono-Regular.ttf",
-                "name": "MONO_FONT_14",
-                "type": "font"
-            },
-            {
-                "file": "images/timer_white.png",
-                "name": "IMAGES_TIMER_WHITE_PNG",
-                "type": "png"
-            },
-            {
-                "file": "images/timer.png",
-                "name": "IMAGES_TIMER_PNG",
-                "type": "png"
-            }
-        ]
-    },
-    "sdkVersion": "3",
-    "shortName": "Harvest",
-    "targetPlatforms": [
-        "aplite",
-        "basalt"
-    ],
-    "uuid": "3dc6630e-db9d-4459-a14e-142bca3c41d9",
-    "versionCode": 1,
-    "versionLabel": "1.0",
-    "watchapp": {
-        "hiddenApp": false,
-        "watchface": false
-    }
+  "appKeys": {},
+  "capabilities": [
+    "configurable"
+  ],
+  "companyName": "Meiguro",
+  "longName": "Pebble.js",
+  "resources": {
+    "media": [
+      {
+        "file": "images/menu_icon.png",
+        "menuIcon": true,
+        "name": "IMAGE_MENU_ICON",
+        "type": "bitmap"
+      },
+      {
+        "file": "images/logo_splash.png",
+        "name": "IMAGE_LOGO_SPLASH",
+        "type": "bitmap"
+      },
+      {
+        "file": "images/tile_splash.png",
+        "name": "IMAGE_TILE_SPLASH",
+        "type": "bitmap"
+      },
+      {
+        "file": "fonts/UbuntuMono-Regular.ttf",
+        "name": "MONO_FONT_14",
+        "type": "font"
+      }
+    ]
+  },
+  "sdkVersion": "3",
+  "shortName": "Pebble.js",
+  "targetPlatforms": [
+    "aplite",
+    "basalt",
+    "chalk"
+  ],
+  "uuid": "133215f0-cf20-4c05-997b-3c9be5a64e5b",
+  "versionCode": 1,
+  "versionLabel": "0.4",
+  "watchapp": {
+    "watchface": false
+  }
 }
