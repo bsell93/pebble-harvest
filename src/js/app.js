@@ -5,65 +5,26 @@
  */
 
 var clientList = require('clientList');
-var Feature = require('platform/feature');
 var service = require('service');
+var splash = require('splash');
 var taskList = require('taskList');
-var UI = require('ui');
-var Vector2 = require('vector2');
 
 
 
 var forDate = '';
 var getDataIntervalTimer = null;
-var splashWindow;
-var spinnerInterval;
 
 
 activate();
 
 function activate() {
   service.createConfigListenersAndGetTimeEntries(getTimeEntriesSuccess, error);
-  var textTitle = 'Downloading client data...';
   if (service.validLoginInfo()) {
+    splash.createAndShowSplash();
     service.getTimeEntries(getTimeEntriesSuccess, error);
   } else {
-    textTitle = 'Enter Harvest credentials in the settings of the app.';
+    splash.createCredentialSplash('Enter Harvest credentials in the settings of the app.');
   }
-  createAndShowSplash(textTitle);
-}
-
-function createAndShowSplash(textTitle) {
-  // Show splash screen while waiting for data
-  splashWindow = new UI.Window({
-    backgroundColor: 'white'
-  });
-  
-  var res = Feature.resolution();
-
-  // Text element to inform user
-  var text = new UI.Text({
-    color: 'black',
-    font: 'BITHAM_42_BOLD',
-    position: new Vector2(0, (res.y/2) - 25),
-    size: new Vector2(res.x, 50),
-    text: 'H',
-    textAlign: 'center'
-  });
-  
-  var spinnerX = res.x * 0.90;
-  var spinnerY = res.y * 0.90;
-  var spinner = new UI.Radial({
-    borderWidth: 5,
-    borderColor: 'blue',
-    position: new Vector2((res.x/2) - (spinnerX/2), (res.y/2) - (spinnerY/2)),
-    radius: 2,
-    size: new Vector2(spinnerX, spinnerY)
-  });
-
-  // Add to splashWindow and show
-  splashWindow.add(text).add(spinner).show();
-  
-  createSpinnerAnimation(spinner);
 }
 
 function createMainListListeners() {
@@ -88,27 +49,6 @@ function createMainListListeners() {
         createTaskListeners(project);
     }
   });
-}
-
-function createSpinnerAnimation(spinner) {
-  var angle = 0;
-  var angle2 = 0;
-  var changeRotationCount = 0;
-  var changeRotation = 1;
-  spinnerInterval = setInterval(function() {
-    if ((angle >= 360 && changeRotation === 1) || (angle <= -360 && changeRotation === -1)) {
-      angle = 0;
-      changeRotationCount++;
-      if (changeRotationCount >= 3) {
-        changeRotation = changeRotation === 1 ? -1 : 1;
-        changeRotationCount = 0;
-      }
-    }
-    angle2 = angle + 90;
-    spinner.angle(angle);
-    spinner.angle2(angle2);
-    angle += 5 * changeRotation;
-  }, 10);
 }
 
 function createTaskListeners(project) {
@@ -162,7 +102,8 @@ function createTimerSuccess(data) {
 }
 
 function getTimeEntriesSuccess(data) {
-  clearInterval(spinnerInterval);
+  splash.hide();
+  
   data = JSON.parse(data);
   forDate = data.for_day;
   clientList.dayEntries = data.day_entries;
@@ -170,7 +111,6 @@ function getTimeEntriesSuccess(data) {
   
   clientList.showClients();
   
-  splashWindow.hide();
   createMainListListeners();
   
   setUpdateDataInterval();
