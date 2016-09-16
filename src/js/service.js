@@ -9,6 +9,7 @@ var service = {
   getTimeEntries: getTimeEntries,
   toggleTimer: toggleTimer
 };
+this.exports = service;
 
 
 var baseUrl = getBaseUrl();
@@ -80,5 +81,3 @@ function post(url, data, success, error) {
     }, success, error
   );
 }
-
-this.exports = service;
